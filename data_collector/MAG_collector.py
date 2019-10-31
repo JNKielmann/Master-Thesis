@@ -9,6 +9,7 @@ from pymongo import MongoClient
 from tqdm import tqdm
 
 from MAG_model import Author, Keyword, Journal, Conference, Paper
+import config_example
 
 mag_api_url = "https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate"
 
@@ -68,7 +69,7 @@ def request_papers(offset, page_size, institute_name="karlsruhe institute of tec
                 "attributes": "Id,Ti,D,CC,AA.AuN,AA.AuId,AA.AfN,AA.S,F.FN,F.FId,J.JN,J.JId,C.CN,C.CId,E"
             },
             headers={
-                "Ocp-Apim-Subscription-Key": ""
+                "Ocp-Apim-Subscription-Key": config_example.mag_subscription_key
             }
         )
         response.raise_for_status()
@@ -95,7 +96,7 @@ def request_all_papers(
                     f"Error while trying to parse paper from json. Ignoring...")
 
 if __name__ == '__main__':
-    mongo_client = MongoClient("localhost", 27017, username="dev", password="Password4DEV")
+    mongo_client = MongoClient("localhost", 27017, username=config_example.mongo_user, password=config_example.mongo_password)
     db = mongo_client["expert_recommender"]
     paper_collection = db["paper_collection"]
     for paper_json in tqdm((paper.to_json() for paper in request_all_papers(page_size=500))):
