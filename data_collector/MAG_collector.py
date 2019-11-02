@@ -1,15 +1,19 @@
+import sys
 import logging
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 import json
 import requests
 from requests import HTTPError
 from typing import List, Dict, Iterator
 from datetime import datetime
+import time
 
 from pymongo import MongoClient
 from tqdm import tqdm
 
 from MAG_model import Author, Keyword, Journal, Conference, Paper
-import config_example
+import config
 
 mag_api_url = "https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate"
 
@@ -69,7 +73,7 @@ def request_papers(offset, page_size, institute_name="karlsruhe institute of tec
                 "attributes": "Id,Ti,D,CC,AA.AuN,AA.AuId,AA.AfN,AA.S,F.FN,F.FId,J.JN,J.JId,C.CN,C.CId,E"
             },
             headers={
-                "Ocp-Apim-Subscription-Key": config_example.mag_subscription_key
+                "Ocp-Apim-Subscription-Key": config.mag_subscription_key
             }
         )
         response.raise_for_status()
@@ -95,9 +99,63 @@ def request_all_papers(
                 logging.exception(
                     f"Error while trying to parse paper from json. Ignoring...")
 
+
+def request_keywords(level, offset, page_size):
+    for i in range(6):
+        response = requests.get(
+            mag_api_url,
+            params={
+                "expr": f"FL={level}",
+                "model": "latest",
+                "count": page_size,
+                "offset": offset,
+                "attributes": "Id,DFN,FL"
+            },
+            headers={
+                "Ocp-Apim-Subscription-Key": config.mag_subscription_key
+            }
+        )
+        try:
+            response.raise_for_status()
+            time.sleep(1)
+            return response.json()
+        except HTTPError as http_err:
+            logging.exception(
+                f"Error while requesting keywords with level {level} and offset {offset}."
+                f" Response was: {response.text}")
+            time.sleep((i+1)*10)
+    raise RuntimeError("Failed to request keywords 6 times")
+
+
+def request_all_keywords(page_size):
+    for level in range(3, 6):
+        offset = 0
+        logging.info(f"Start requesting keywords for level {level}")
+        while True:
+            keyword_json = request_keywords(level, offset, page_size)
+            offset += page_size
+            if len(keyword_json["entities"]) == 0:
+                break
+            for keyword_entity in keyword_json["entities"]:
+                try:
+                    yield {
+                        "id": str(keyword_entity["Id"]),
+                        "value": keyword_entity["DFN"],
+                        "level": keyword_entity["FL"]
+                    }
+                except KeyError:
+                    logging.exception(
+                        f"Error while trying to parse keyword from json. Ignoring...")
+
+
 if __name__ == '__main__':
-    mongo_client = MongoClient("localhost", 27017, username=config_example.mongo_user, password=config_example.mongo_password)
+    mongo_client = MongoClient("localhost", 27017, username=config.mongo_user,
+                               password=config.mongo_password)
     db = mongo_client["expert_recommender"]
     paper_collection = db["paper_collection"]
-    for paper_json in tqdm((paper.to_json() for paper in request_all_papers(page_size=500))):
-        paper_collection.insert_one(paper_json)
+    # for paper_json in tqdm(
+    #         (paper.to_json() for paper in request_all_papers(page_size=500))):
+    #     paper_collection.insert_one(paper_json)
+    keyword_collection = db["keywords"]
+    for keyword in tqdm(request_all_keywords(1000)):
+        keyword_collection.insert_one(keyword)
