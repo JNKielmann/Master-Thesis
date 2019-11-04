@@ -120,7 +120,7 @@ def get_keywords_for(db, paper_ids):
         {
             "$project": {
                 "keyword_data": 0,
-                "_id":0
+                "_id": 0
             }
         }
     ]))
@@ -196,6 +196,7 @@ def sub_multiple_spaces(text):
 
 def clean_text(title, abstract):
     text = title + " " + abstract
+    text = text.lower()
     text = replace_all(text, [
         ("n't ", " not "),
         ("'ve ", " have "),
@@ -230,6 +231,11 @@ def export_keywords_csv(keywords, path):
     keywords.to_csv(path, index=False)
 
 
+def export_keywords_json(keywords, path):
+    logging.info(f"Writing keywords to {path}")
+    keywords.to_json(path, orient="records")
+
+
 def main():
     logging.info("Start preprocessing data")
     mongo_client = MongoClient("localhost", 27017,
@@ -241,8 +247,8 @@ def main():
     expert_papers = clean_text_df(expert_papers)
     export_papers_csv(expert_papers, "../data/kit_expert_2017_papers.csv")
     keywords_for_expert_papers = get_keywords_for(db, list(expert_papers["id"]))
-    export_keywords_csv(keywords_for_expert_papers,
-                        "../data/kit_expert_2017_keywords.csv")
+    export_keywords_json(keywords_for_expert_papers,
+                         "../data/kit_expert_2017_keywords.json")
     logging.info("Finished preprocessing data")
 
 
