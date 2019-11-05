@@ -20,10 +20,7 @@ class SpacyPreprocessor:
         if self.combine_noun_chunks:
             for noun_phrase in list(tokens.noun_chunks):
                 noun_phrase.merge(lemma=noun_phrase.lemma_)
-        if self.lemmatization:
-            return " ".join([token.lemma_.replace(" ", "_") for token in tokens])
-        else:
-            return " ".join([token.text.replace(" ", "_") for token in tokens])
+        return " ".join([token.lemma_ if token.pos_ == "NOUN" else token.text for token in tokens])
 
     def __getstate__(self):
         return self.name, self.lemmatization, self.combine_noun_chunks
