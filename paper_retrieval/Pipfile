@@ -12,6 +12,7 @@ jupyter = "*"
 jupyterlab = "*"
 pandas = "*"
 spacy = "*"
+tqdm = "*"
 
 [requires]
 python_version = "3.7"

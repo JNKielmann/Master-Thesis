@@ -56,7 +56,7 @@ def get_papers_of_authors(collection, author_ids):
         {
             "$project": {
                 "id": 1,
-                "normalized_title": 1,
+                "display_title": 1,
                 "abstract": 1,
                 "keywords": 1,
                 "kit_authors": {
@@ -169,61 +169,9 @@ def filter_bad_papers(papers):
     return papers
 
 
-def replace_all(text, replacement_list):
-    for old, new in replacement_list:
-        text = text.replace(old, new)
-    return text
-
-
-def sub_iso(text):
-    return re.sub(
-        r"\biso (\d+)(-(\d+))?\b",
-        lambda m: f"iso_{m.group(1)}{'_' + m.group(3) if m.group(3) else ''}",
-        text)
-
-
-def sub_unknown_chars(text):
-    return re.sub(r"([^a-z0-9_ ])+", " ", text)
-
-
-def sub_numbers(text):
-    return re.sub(r"\b(\d+)\b", " ", text)
-
-
-def sub_multiple_spaces(text):
-    return re.sub(r"\s\s+", " ", text)
-
-
-def clean_text(title, abstract):
-    text = title + " " + abstract
-    text = text.lower()
-    text = replace_all(text, [
-        ("n't ", " not "),
-        ("'ve ", " have "),
-        ("'ll ", " will "),
-        ("'s ", " "),
-        ("'d ", " ")
-    ])
-    text = sub_iso(text)
-    text = sub_unknown_chars(text)
-    text = sub_numbers(text)
-    text = sub_multiple_spaces(text)
-    return text
-
-
-def clean_text_df(papers):
-    start_time = time()
-    logging.info("Start cleaning abstract text")
-    papers["abstract"] = papers.apply(
-        lambda paper: clean_text(paper.normalized_title, paper.abstract),
-        axis=1)
-    logging.info(f"Finished cleaning abstract text in {time() - start_time:.2f} seconds")
-    return papers
-
-
 def export_papers_csv(papers, path):
     logging.info(f"Writing papers to {path}")
-    papers[["id", "abstract"]].to_csv(path, index=False)
+    papers[["id", "text"]].to_csv(path, index=False)
 
 
 def export_keywords_csv(keywords, path):
@@ -244,11 +192,12 @@ def main():
     db = mongo_client["expert_recommender"]
     expert_papers = get_expert_papers(db)
     expert_papers = filter_bad_papers(expert_papers)
-    expert_papers = clean_text_df(expert_papers)
+    expert_papers["text"] = \
+        expert_papers["display_title"] + " " + expert_papers["abstract"]
     export_papers_csv(expert_papers, "../data/kit_expert_2017_papers.csv")
-    keywords_for_expert_papers = get_keywords_for(db, list(expert_papers["id"]))
-    export_keywords_json(keywords_for_expert_papers,
-                         "../data/kit_expert_2017_keywords.json")
+    # keywords_for_expert_papers = get_keywords_for(db, list(expert_papers["id"]))
+    # export_keywords_json(keywords_for_expert_papers,
+    #                      "../data/kit_expert_2017_keywords.json")
     logging.info("Finished preprocessing data")
 
 
