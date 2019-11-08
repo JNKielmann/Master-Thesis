@@ -13,6 +13,9 @@ jupyterlab = "*"
 pandas = "*"
 spacy = "*"
 tqdm = "*"
+seaborn = "*"
+matplotlib = "*"
+scipy = "*"
 
 [requires]
 python_version = "3.7"
