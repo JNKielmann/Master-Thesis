@@ -23,7 +23,7 @@ def mean_average_precision(model, test_data, progress_callback=None):
     return np.mean(ap_list)
 
 def mean_average_precision_parallel(model, test_data, n_jobs):
-    pool = Pool(n_jobs)
     work_chunks = np.array_split(test_data, n_jobs)
-    map_list = pool.map(partial(mean_average_precision, model), work_chunks)
+    with Pool(n_jobs) as pool:
+        map_list = pool.map(partial(mean_average_precision, model), work_chunks)
     return np.mean(map_list)
