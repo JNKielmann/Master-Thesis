@@ -16,6 +16,7 @@ tqdm = "*"
 seaborn = "*"
 matplotlib = "*"
 scipy = "*"
+tensorflow = "<2.0,>=1.15"
 
 [requires]
 python_version = "3.7"

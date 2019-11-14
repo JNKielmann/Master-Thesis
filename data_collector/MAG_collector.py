@@ -123,7 +123,7 @@ def request_keywords(level, offset, page_size):
             logging.exception(
                 f"Error while requesting keywords with level {level} and offset {offset}."
                 f" Response was: {response.text}")
-            time.sleep((i+1)*10)
+            time.sleep((i + 1) * 10)
     raise RuntimeError("Failed to request keywords 6 times")
 
 
@@ -156,6 +156,6 @@ if __name__ == '__main__':
     # for paper_json in tqdm(
     #         (paper.to_json() for paper in request_all_papers(page_size=500))):
     #     paper_collection.insert_one(paper_json)
-    keyword_collection = db["keywords"]
-    for keyword in tqdm(request_all_keywords(1000)):
-        keyword_collection.insert_one(keyword)
+    # keyword_collection = db["keywords"]
+    # for keyword in tqdm(request_all_keywords(1000)):
+    #     keyword_collection.insert_one(keyword)

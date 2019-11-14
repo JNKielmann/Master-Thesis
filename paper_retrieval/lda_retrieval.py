@@ -21,7 +21,7 @@ class LDARetrieval():
         bow_corpus = [self.id2word.doc2bow(text) for text in corpus.data]
 
         lda_logger = logging.getLogger("gensim.models.ldamodel")
-        lda_logger.setLevel("DEBUG")
+        lda_logger.setLevel("WARN")
         log_filter = LogFilter(["converged", "PROGRESS"])
         lda_logger.addFilter(log_filter)
         logger.info(f"Start training lda model with {num_topics} topics")
