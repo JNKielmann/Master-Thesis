@@ -7,4 +7,4 @@ class StopWordPreprocessor():
 
     def __call__(self, text: str):
         return " ".join([word for word in text.split(" ") if
-                         word not in STOP_WORDS and len(word) > 3])
+                         word not in STOP_WORDS and len(word) > 2])
