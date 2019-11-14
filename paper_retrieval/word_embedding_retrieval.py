@@ -42,9 +42,9 @@ class WordEmbeddingRetrieval:
         return WordEmbeddingRetrieval(corpus, pretrained_vectors)
 
     @staticmethod
-    def from_new_embedding(corpus: Corpus) -> 'WordEmbeddingRetrieval':
+    def from_new_embedding(corpus: Corpus, window_size=5) -> 'WordEmbeddingRetrieval':
         print("from_new_embedding")
-        model = FastText(sg=True, size=300, min_count=1)  # (size=4, window=3, min_count=1)
+        model = FastText(sg=True, size=300, min_count=1, window=window_size)
         model.build_vocab(sentences=corpus.data)
         model.train(sentences=corpus.data, total_examples=len(corpus.data), epochs=20)
         return WordEmbeddingRetrieval(corpus, model.wv)
