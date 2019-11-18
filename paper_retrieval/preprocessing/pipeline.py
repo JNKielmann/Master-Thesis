@@ -9,7 +9,9 @@ import pandas as pd
 import os
 
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 def apply_pipeline(text, pipeline):
     for stage in pipeline:
@@ -21,8 +23,8 @@ class Corpus:
     def __init__(self, file_path, preprocessing_pipeline, load_from_cache=True,
                  id_column="id", text_column="text", n_jobs=8):
         logger.info(f"Start preprocessing pipeline "
-                     f"\"{_get_pipeline_name(preprocessing_pipeline)}\" "
-                     f"for file {file_path}.")
+                    f"\"{_get_pipeline_name(preprocessing_pipeline)}\" "
+                    f"for file {file_path}.")
         self.pipeline = copy.deepcopy(preprocessing_pipeline)
         cache_file_path = self._get_cache_file_path(file_path)
         if load_from_cache:
@@ -46,13 +48,13 @@ class Corpus:
             else:
                 self.data = self.data.progress_apply(stage)
             logger.info(f"Finished stage \"{stage.name}\" in "
-                         f"{time() - start_time:.2f} seconds")
+                        f"{time() - start_time:.2f} seconds")
         if pool is not None:
             pool.close()
         self._save_to_file(cache_file_path)
         self.data = self.data.str.split(" ")
         logger.info(f"Finished preprocessing pipeline. "
-                     f"Saved preprocessed corpus to cache file {cache_file_path}")
+                    f"Saved preprocessed corpus to cache file {cache_file_path}")
 
     def _save_to_file(self, file_path):
         pd.concat([self.ids, self.data], axis=1).to_csv(file_path + ".csv")

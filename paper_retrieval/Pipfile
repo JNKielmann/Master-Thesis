@@ -17,6 +17,7 @@ seaborn = "*"
 matplotlib = "*"
 scipy = "*"
 tensorflow = "<2.0,>=1.15"
+scikit-learn = "*"
 
 [requires]
 python_version = "3.7"
