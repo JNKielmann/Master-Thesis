@@ -7,6 +7,7 @@ from pymongo import MongoClient
 import langid
 from whatthelang import WhatTheLang
 import config
+import json
 
 import logging
 
@@ -184,20 +185,41 @@ def export_keywords_json(keywords, path):
     keywords.to_json(path, orient="records")
 
 
+def get_keyword_hierarchy(db):
+    result = {}
+    keywords = list(db["keywords_hierarchy"].find())
+    result["keyword_to_id"] = {
+        keyword["value"]: str(keyword["id"])
+        for keyword in keywords
+    }
+    result["id_to_children"] = {
+        str(keyword["id"]): {
+            "child_ids": [str(k) for k in keyword.get("childIds", [])],
+            "value": keyword["value"]
+        }
+        for keyword in keywords
+    }
+    return result
+
+
 def main():
     logging.info("Start preprocessing data")
     mongo_client = MongoClient("localhost", 27017,
                                username=config.mongo_user,
                                password=config.mongo_password)
     db = mongo_client["expert_recommender"]
-    expert_papers = get_expert_papers(db)
-    expert_papers = filter_bad_papers(expert_papers)
-    expert_papers["text"] = \
-        expert_papers["display_title"] + " " + expert_papers["abstract"]
-    export_papers_csv(expert_papers, "../data/kit_expert_2017_papers.csv")
+    # expert_papers = get_expert_papers(db)
+    # expert_papers = filter_bad_papers(expert_papers)
+    # expert_papers["text"] = \
+    #     expert_papers["display_title"] + " " + expert_papers["abstract"]
+    # export_papers_csv(expert_papers, "../data/kit_expert_2017_papers.csv")
     # keywords_for_expert_papers = get_keywords_for(db, list(expert_papers["id"]))
     # export_keywords_json(keywords_for_expert_papers,
     #                      "../data/kit_expert_2017_keywords.json")
+    keyword_hierarchy = get_keyword_hierarchy(db)
+    with open("../data/keyword_hierarchy.json", 'w') as file:
+        json.dump(keyword_hierarchy, file)
+
     logging.info("Finished preprocessing data")
 
 

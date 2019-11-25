@@ -17,7 +17,8 @@ class TfidfRetrieval:
             analyzer="word",
             tokenizer=identity,
             preprocessor=identity,
-            ngram_range=(1, max_ngram)
+            ngram_range=(1, max_ngram),
+            min_df=2
         )
         if use_bm25:
             self.tfidf_transformer = BM25Transformer(use_idf, k1, b)

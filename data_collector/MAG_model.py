@@ -13,6 +13,7 @@ class Keyword(NamedTuple):
     value: str
 
 
+
 class Journal(NamedTuple):
     id: str
     name: str
@@ -31,6 +32,7 @@ class Paper(NamedTuple):
     citation_count: int
     total_author_count: int
     kit_authors: List[Author]
+    all_authors: List[Author]
     keywords: List[Keyword]
     journal: Journal
     conference: Conference
