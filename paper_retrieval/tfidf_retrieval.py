@@ -10,15 +10,16 @@ from preprocessing import Corpus, apply_pipeline
 
 class TfidfRetrieval:
     def __init__(self, corpus: Corpus, use_idf=True, sublinear_tf=True,
-                 max_ngram=1, use_bm25=False, k1=1.0, b=0.75):
+                 max_ngram=1, use_bm25=False, k1=1.0, b=0.75, fixed_vocab=None):
         self.pipeline = corpus.pipeline
         self.ids = pd.Series(corpus.ids, name="id")
+        vocab = set([apply_pipeline(word, self.pipeline) for word in fixed_vocab])
         self.vectorizer = CountVectorizer(
+            vocabulary=vocab,
             analyzer="word",
             tokenizer=identity,
             preprocessor=identity,
             ngram_range=(1, max_ngram),
-            min_df=2
         )
         if use_bm25:
             self.tfidf_transformer = BM25Transformer(use_idf, k1, b)
@@ -31,10 +32,16 @@ class TfidfRetrieval:
         self.vectorized_corpus = self.tfidf_transformer.fit_transform(term_freq)
 
     def get_ranked_documents(self, query: str) -> pd.DataFrame:
+        print(query)
         query = apply_pipeline(query, self.pipeline)
+        print(query)
         query = query.split(" ")
         vectorized_query = self.vectorizer.transform([query])
         vectorized_query = self.tfidf_transformer.transform(vectorized_query)
+        print(query)
+
+        v = self.vectorizer.get_feature_names()
+        print([v[i] for i in vectorized_query.indices])
         df = pd.DataFrame(self.ids)
         df["score"] = linear_kernel(vectorized_query, self.vectorized_corpus).flatten()
         df.sort_values(by="score", ascending=False, inplace=True)
