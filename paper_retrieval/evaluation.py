@@ -13,24 +13,22 @@ def average_precision(ranked_ids, relevant_ids):
     return np.sum(precisions) / len(relevant_ids)
 
 
-def mean_average_precision(model, test_data, progress_callback=None):
+def average_precision_table(model, test_data, progress_callback=None):
     ap_list = []
     for test_row in test_data:
         query = test_row["query"]
         relevant_ids = test_row["documents"]
         ranked_ids = model.get_ranked_documents(query)["id"]
         ap = average_precision(ranked_ids, relevant_ids)
-        # if ap < 0.01:
-        #     print(query, ap)
-        #     print("relevant ids:")
-        #     print(relevant_ids[:10])
-        #     print("ranked_ids")
-        #     print(ranked_ids[:15])
-        #     print()
-        ap_list.append(ap)
+        ap_list.append((query, ap))
         if progress_callback:
             progress_callback()
-    return np.mean(ap_list)
+    return pd.DataFrame.from_records(ap_list, columns=["query", "average precision"])
+
+
+def mean_average_precision(model, test_data, progress_callback=None):
+    ap_table = average_precision_table(model, test_data, progress_callback)
+    return ap_table["average precision"].mean()
 
 
 def mean_average_precision_parallel(model, test_data, n_jobs):
