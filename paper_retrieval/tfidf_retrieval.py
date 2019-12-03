@@ -1,8 +1,10 @@
 import pickle
 
 import pandas as pd
+from gensim.similarities import SparseMatrixSimilarity
 from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
-from sklearn.metrics.pairwise import linear_kernel
+from sklearn.metrics.pairwise import linear_kernel, cosine_similarity
+from sklearn.preprocessing import normalize
 
 from bm25_transformer import BM25Transformer
 from preprocessing import Corpus, apply_pipeline
@@ -13,9 +15,10 @@ class TfidfRetrieval:
                  max_ngram=1, use_bm25=False, k1=1.0, b=0.75, fixed_vocab=None):
         self.pipeline = corpus.pipeline
         self.ids = pd.Series(corpus.ids, name="id")
-        vocab = set([apply_pipeline(word, self.pipeline) for word in fixed_vocab])
+        if fixed_vocab is not None:
+            fixed_vocab = set([apply_pipeline(word, self.pipeline) for word in fixed_vocab])
         self.vectorizer = CountVectorizer(
-            vocabulary=vocab,
+            vocabulary=fixed_vocab,
             analyzer="word",
             tokenizer=identity,
             preprocessor=identity,
@@ -30,20 +33,18 @@ class TfidfRetrieval:
             )
         term_freq = self.vectorizer.fit_transform(corpus.data)
         self.vectorized_corpus = self.tfidf_transformer.fit_transform(term_freq)
+        self.vectorized_corpus = normalize(self.vectorized_corpus)
 
+        
     def get_ranked_documents(self, query: str) -> pd.DataFrame:
-        print(query)
         query = apply_pipeline(query, self.pipeline)
-        print(query)
         query = query.split(" ")
         vectorized_query = self.vectorizer.transform([query])
         vectorized_query = self.tfidf_transformer.transform(vectorized_query)
-        print(query)
+        vectorized_query = normalize(vectorized_query)
 
-        v = self.vectorizer.get_feature_names()
-        print([v[i] for i in vectorized_query.indices])
         df = pd.DataFrame(self.ids)
-        df["score"] = linear_kernel(vectorized_query, self.vectorized_corpus).flatten()
+        df["score"] = (self.vectorized_corpus * vectorized_query.T).toarray()
         df.sort_values(by="score", ascending=False, inplace=True)
         return df[df["score"] > 0]
 
