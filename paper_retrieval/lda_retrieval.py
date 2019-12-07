@@ -30,10 +30,9 @@ class LDARetrieval():
                                   num_topics=num_topics,
                                   random_state=100,
                                   update_every=1,
-                                  chunksize=10000,
-                                  passes=2,
-                                  alpha='auto',
-                                  per_word_topics=True)
+                                  chunksize=4000,
+                                  passes=3,
+                                  alpha='auto')
         logger.info("Compute LDA vectors for all documents")
         lda_corpus = [self.lda_model.get_document_topics(doc) for doc in bow_corpus]
         logger.info("Create sparse similarity matrix")
