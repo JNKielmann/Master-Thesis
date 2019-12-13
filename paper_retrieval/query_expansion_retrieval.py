@@ -39,7 +39,7 @@ class QueryExpansionRetrieval:
         normal_results["inverse_rank"] = (1 / (
                     normal_results.reset_index().index + 1)) * 1
         expanded_results["inverse_rank"] = (1 / (
-                expanded_results.reset_index().index + 1)) * 0.0
+                expanded_results.reset_index().index + 1)) * 0.5
         merged_results = pd.merge(normal_results, expanded_results, on="id", how="outer")
         merged_results = merged_results.fillna(0)
         merged_results["score"] = merged_results["inverse_rank_x"] + merged_results[

@@ -55,7 +55,7 @@ def train_evaluate_model(model_info, test_sets):
     model = model_factory()
     logging.info("Start evaluating model " + model_name)
     result = evaluate_model(model, test_sets)
-    logging.info("Finished processing model " + model_name)
+    logging.info(f"Finished processing model {model_name} with result {result}" )
     return pd.DataFrame.from_dict({model_name: result}, orient="index")
 
 

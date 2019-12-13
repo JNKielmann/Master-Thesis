@@ -2,13 +2,14 @@ import pandas as pd
 from gensim.models.phrases import Phrases, Phraser
 
 class BigramPreprocessor:
-    def __init__(self):
-        self.name = "bigrams"
+    def __init__(self, threshold: float):
+        self.name = f"bigrams{threshold}"
         self.phraser = None
+        self.threshold = threshold
 
     def fit_corpus(self, corpus: pd.Series):
         corpus = list(corpus.str.split(" "))
-        phrases = Phrases(corpus, min_count=1, threshold=25)
+        phrases = Phrases(corpus, min_count=1, threshold=self.threshold)
         self.phraser = Phraser(phrases)
 
     def __call__(self, text: str):

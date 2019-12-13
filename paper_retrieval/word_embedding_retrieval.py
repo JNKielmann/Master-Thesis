@@ -1,3 +1,4 @@
+import pickle
 from typing import List
 
 import numpy as np
@@ -31,6 +32,15 @@ class WordEmbeddingRetrieval:
             relevant_docs = self.document_lookup.similar_by_vector(query, topn=1000)
         return pd.DataFrame(relevant_docs, columns=["id", "score"])
 
+    def save(self, file_path: str):
+        with open(file_path, "wb") as file:
+            pickle.dump(self, file)
+
+    @staticmethod
+    def load(file_path: str) -> "WordEmbeddingRetrieval":
+        with open(file_path, "rb") as file:
+            return pickle.load(file)
+
     @staticmethod
     def from_pretrained_embedding(corpus: Corpus, sentence_embedder,
                                   pretrained_model_path: str) -> 'WordEmbeddingRetrieval':
@@ -40,24 +50,28 @@ class WordEmbeddingRetrieval:
 
     @staticmethod
     def from_new_embedding(corpus: Corpus, sentence_embedder,
-                           window_size=5, embedding_size=300) -> 'WordEmbeddingRetrieval':
+                           window_size=5, embedding_size=300,
+                           doc_corpus: Corpus = None) -> 'WordEmbeddingRetrieval':
         print("from_new_embedding")
-        model = FastText(sg=True, size=embedding_size, min_count=1, window=window_size,
+        model = FastText(sg=True, size=embedding_size, min_count=2, window=window_size,
                          negative=10)
         model.build_vocab(sentences=corpus.data)
-        model.train(sentences=corpus.data, total_examples=len(corpus.data), epochs=20)
-        return WordEmbeddingRetrieval(corpus, model.wv, sentence_embedder)
+        model.train(sentences=corpus.data, total_examples=len(corpus.data), epochs=5)#epochs=20)
+        return WordEmbeddingRetrieval(corpus if doc_corpus is None else doc_corpus,
+                                      model.wv, sentence_embedder)
 
     @staticmethod
     def from_finetuned_embedding(corpus: Corpus, sentence_embedder,
-                                 pretrained_model_path: str) -> 'WordEmbeddingRetrieval':
+                                 pretrained_model_path: str,
+                                 doc_corpus: Corpus = None) -> 'WordEmbeddingRetrieval':
         print("from_finetuned_embedding")
         model = load_facebook_model(pretrained_model_path)
         model.min_count = 1
         model.build_vocab(sentences=corpus.data, update=True)
         model.train(sentences=corpus.data, total_examples=len(corpus.data),
                     epochs=20)
-        return WordEmbeddingRetrieval(corpus, model.wv, sentence_embedder)
+        return WordEmbeddingRetrieval(corpus if doc_corpus is None else doc_corpus,
+                                      model.wv, sentence_embedder)
 
 
 class AverageSentenceEmbedding:
