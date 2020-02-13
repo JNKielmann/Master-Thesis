@@ -8,14 +8,14 @@ from preprocessing import Corpus, apply_pipeline
 
 
 class QLMRetrieval:
-    def __init__(self, corpus: Corpus):
+    def __init__(self, corpus: Corpus, max_ngram=1):
         self.pipeline = corpus.pipeline
         self.ids = pd.Series(corpus.ids, name="id")
         self.vectorizer = CountVectorizer(
             analyzer="word",
             tokenizer=identity,
             preprocessor=identity,
-            ngram_range=(1, 1),
+            ngram_range=(1, max_ngram),
         )
         document_term_counts = self.vectorizer.fit_transform(corpus.data)
         # divide by document length to get mle estimation
@@ -40,11 +40,15 @@ class QLMRetrieval:
         smoothed_probs = 0.8 * document_probs + 0.2 * corpus_probs
         smoothed_probs **= query_term_counts.toarray()[0, used_query_terms]
         document_scores = np.prod(smoothed_probs, axis=1)
+        # smoothed_probs = np.log(smoothed_probs)
+        # smoothed_probs *= query_term_counts.toarray()[0, used_query_terms]
+        # document_scores = np.sum(smoothed_probs, axis=1)
+
 
         df = pd.DataFrame(self.ids)
         df["score"] = document_scores
         df.sort_values(by="score", ascending=False, inplace=True)
-        return df[df["score"] > 0]
+        return df
 
     def save(self, file_path: str):
         with open(file_path, "wb") as file:
