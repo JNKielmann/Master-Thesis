@@ -27,19 +27,18 @@ class QLMRetrieval:
         # compute corpus model for smoothing
         corpus_model = self.vectorizer.transform([np.concatenate(corpus.data)])
         corpus_model = corpus_model.toarray().squeeze()
+        corpus_model = corpus_model / corpus_model.sum()
         self.corpus_model = corpus_model
-
 
     def get_ranked_documents(self, query: str) -> pd.DataFrame:
         query = apply_pipeline(query, self.pipeline)
         query = query.split(" ")
         query_term_counts = self.vectorizer.transform([query])
         used_query_terms = query_term_counts.nonzero()[1]
-        document_probs = self.document_term_counts[:, used_query_terms].to_array()
-        document_probs **= query_term_counts.toarray()[0, used_query_terms]
+        document_probs = self.document_term_counts[:, used_query_terms].toarray()
         corpus_probs = self.corpus_model[used_query_terms]
-        corpus_probs **= query_term_counts.toarray()[0, used_query_terms]
-        smoothed_probs = 0.8 document_probs + 0.2 * corpus_probs
+        smoothed_probs = 0.8 * document_probs + 0.2 * corpus_probs
+        smoothed_probs **= query_term_counts.toarray()[0, used_query_terms]
         document_scores = np.prod(smoothed_probs, axis=1)
 
         df = pd.DataFrame(self.ids)
