@@ -33,9 +33,8 @@ def mean_average_precision(model, test_data, progress_callback=None):
 
 
 def mean_average_precision_parallel(model, test_data, n_jobs):
-    work_chunks = np.array_split(test_data, n_jobs)
     with Pool(n_jobs) as pool:
-        map_list = pool.map(partial(mean_average_precision, model), work_chunks)
+        map_list = pool.map(partial(mean_average_precision, model), test_data)
     return np.mean(map_list)
 
 
@@ -49,10 +48,10 @@ def evaluate_model(model, test_sets):
     return results
 
 
-def train_evaluate_model(model_info, test_sets):
-    model_name, model_factory = model_info
+def train_evaluate_model(model_info, corpus, test_sets):
+    model_name, model, corpus = model_info
     logging.info("Start training model " + model_name)
-    model = model_factory()
+    model.prepare(corpus)
     logging.info("Start evaluating model " + model_name)
     result = evaluate_model(model, test_sets)
     logging.info(f"Finished processing model {model_name} with result {result}" )
