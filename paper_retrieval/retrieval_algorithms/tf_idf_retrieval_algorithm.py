@@ -3,7 +3,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 
 from preprocessing import Corpus, apply_pipeline
-from retrieval_algorithms import RetrievalAlgorithm, identity
+from retrieval_algorithms import RetrievalAlgorithm
+from .identity import identity
 
 
 class TfIdfRetrievalAlgorithm(RetrievalAlgorithm):
