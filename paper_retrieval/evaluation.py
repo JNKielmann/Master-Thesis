@@ -1,10 +1,10 @@
+import logging
 from functools import partial
 from multiprocessing.pool import Pool
 
 import numpy as np
 import pandas as pd
 from tqdm.notebook import tqdm
-import logging
 
 
 def average_precision(ranked_ids, relevant_ids):
@@ -30,7 +30,6 @@ def bpref(ranked_ids, relevant_ids):
     correct_results = ranked_ids.isin(relevant_ids)
     num_wrong_above = np.cumsum(~correct_results)
     num_wrong_above = np.clip(num_wrong_above, 0, num_relevant)
-    ranks = pd.Series(np.arange(1, len(ranked_ids) + 1))
     sum_terms = 1 - (num_wrong_above[correct_results] / num_relevant)
     return np.sum(sum_terms) / num_relevant
 
@@ -87,10 +86,9 @@ def evaluate_model(model, test_sets, metrics=None):
             test_set_result = calculate_average_metrics(model, test_set, metrics,
                                                         progress.update)
             for metric_name, metric_value in test_set_result.items():
-                result_text = f"{metric_value['mean']:.3f}±" \
-                              f"{metric_value['confidence_interval_95']:.3f} " \
-                              f"({metric_value['std']:.3f})"
-                results[(test_set_name, metric_name)] = result_text
+                results[(test_set_name, metric_name, "avg")] = metric_value['mean']
+                results[(test_set_name, metric_name, "err")] = metric_value[
+                    'confidence_interval_95']
     return results
 
 
@@ -112,3 +110,22 @@ def train_evaluate_models(model_infos, test_sets, n_jobs=4):
         with Pool(n_jobs) as pool:
             results = pool.map(train_eval, model_infos)
     return pd.concat(results)
+
+
+def to_latex_table(eval_table):
+    def process_row(r):
+        result = ""
+        r = r.reorder_levels([1, 0])
+        avg = r["avg"].values
+        result += row_name + (" & {:.3f}" * len(avg)).format(*avg) + "\\\\\n"
+        err = r["err"].values
+        result += (" & \\small{{±{:.3f}}}" * len(err)).format(*err) + "\\\\[0.15cm]\n"
+        return result
+
+    general_table = r"\textbf{general queries}\\" + "\n"
+    specific_table = r"\textbf{specific queries}\\" + "\n"
+    for row_name, row_data in eval_table.iterrows():
+        general_table += process_row(row_data["general keywords validation"])
+        specific_table += process_row(row_data["specific keywords validation"])
+
+    return general_table + "\\addlinespace\n" + specific_table
