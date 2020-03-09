@@ -1,15 +1,16 @@
+import json
+import logging
 import re
 import sys
-from time import time
-import pandas as pd
 from datetime import datetime
-from pymongo import MongoClient
-import langid
-from whatthelang import WhatTheLang
-import config
-import json
+from time import time
 
-import logging
+import langid
+import pandas as pd
+from pymongo import MongoClient
+from whatthelang import WhatTheLang
+
+import config
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -60,6 +61,8 @@ def get_papers_of_authors(collection, author_ids):
                 "display_title": 1,
                 "abstract": 1,
                 "keywords": 1,
+                "publication_date": 1,
+                "citation_count": 1,
                 "kit_authors": {
                     "$filter": {
                         "input": "$kit_authors",
@@ -82,6 +85,25 @@ def get_expert_papers(db):
     papers = pd.DataFrame(get_papers_of_authors(collection, authors)).drop("_id", axis=1)
     logging.info(f"Found {len(papers)} papers written by KIT experts")
     logging.info(f"Finished retrieving papers in {time() - start_time:.2f} seconds")
+    return papers
+
+
+def get_all_papers(db):
+    start_time = time()
+    logging.info("Start retrieving all general papers from MongoDB")
+    collection = db["general_paper_collection"]
+    papers = collection.find(
+        {},
+        {
+            "id": 1,
+            "display_title": 1,
+            "abstract": 1,
+            "keywords": 1,
+        })
+    papers = pd.DataFrame(papers).drop("_id", axis=1)
+    logging.info(f"Found {len(papers)} general papers")
+    logging.info(
+        f"Finished retrieving all general papers in {time() - start_time:.2f} seconds")
     return papers
 
 
@@ -170,9 +192,31 @@ def filter_bad_papers(papers):
     return papers
 
 
-def export_papers_csv(papers, path):
+def export_paper_abstracts_csv(papers, path):
     logging.info(f"Writing papers to {path}")
     papers[["id", "text"]].to_csv(path, index=False)
+
+
+def export_paper_info_json(papers, path):
+    papers["authors"] = papers["kit_authors"].apply(
+        lambda authors: [{
+            "id": author["id"],
+            "order_in_paper": author["order_in_paper"]
+        } for author in authors]
+    )
+    columns = ["id", "display_title", "publication_date", "citation_count", "authors"]
+    papers[columns].set_index("id").to_json(path, orient="index")
+
+
+def export_author_info_json(papers, path):
+    author_info = {}
+    for i, authors in papers["kit_authors"].iteritems():
+        for author in authors:
+            author_info[author["id"]] = {
+                "name": author["name"]
+            }
+    with open(path, 'w') as file:
+        json.dump(author_info, file)
 
 
 def export_keywords_csv(keywords, path):
@@ -208,19 +252,28 @@ def main():
                                username=config.mongo_user,
                                password=config.mongo_password)
     db = mongo_client["expert_recommender"]
-    # expert_papers = get_expert_papers(db)
+
+    # all_papers = get_all_papers(db)
+    # all_papers = filter_bad_papers(all_papers)
+    # all_papers["text"] = all_papers["display_title"] + " " + all_papers["abstract"]
+    # export_paper_abstracts_csv(all_papers, "../data/general_papers.csv")
+
+    expert_papers = get_expert_papers(db)
     # expert_papers = filter_bad_papers(expert_papers)
     # expert_papers["text"] = \
     #     expert_papers["display_title"] + " " + expert_papers["abstract"]
-    # export_papers_csv(expert_papers, "../data/kit_expert_2017_papers.csv")
+    # export_paper_abstracts_csv(expert_papers, "../data/kit_expert_2017_papers.csv")
+    # export_paper_info_json(expert_papers, "../data/kit_expert_2017_paper_info.json")
+    export_author_info_json(expert_papers, "../data/kit_expert_2017_author_info.json")
     # keywords_for_expert_papers = get_keywords_for(db, list(expert_papers["id"]))
     # export_keywords_json(keywords_for_expert_papers,
     #                      "../data/kit_expert_2017_keywords.json")
-    keyword_hierarchy = get_keyword_hierarchy(db)
-    with open("../data/keyword_hierarchy.json", 'w') as file:
-        json.dump(keyword_hierarchy, file)
 
-    logging.info("Finished preprocessing data")
+    # keyword_hierarchy = get_keyword_hierarchy(db)
+    # with open("../data/keyword_hierarchy.json", 'w') as file:
+    #     json.dump(keyword_hierarchy, file)
+    #
+    # logging.info("Finished preprocessing data")
 
 
 if __name__ == '__main__':
