@@ -1,9 +1,7 @@
 import pickle
 
 import pandas as pd
-from gensim.similarities import SparseMatrixSimilarity
 from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
-from sklearn.metrics.pairwise import linear_kernel, cosine_similarity
 from sklearn.preprocessing import normalize
 
 from bm25_transformer import BM25Transformer
@@ -16,7 +14,8 @@ class TfidfRetrieval:
         self.pipeline = corpus.pipeline
         self.ids = pd.Series(corpus.ids, name="id")
         if fixed_vocab is not None:
-            fixed_vocab = set([apply_pipeline(word, self.pipeline) for word in fixed_vocab])
+            fixed_vocab = set(
+                [apply_pipeline(word, self.pipeline) for word in fixed_vocab])
         self.vectorizer = CountVectorizer(
             vocabulary=fixed_vocab,
             analyzer="word",
@@ -35,7 +34,6 @@ class TfidfRetrieval:
         self.vectorized_corpus = self.tfidf_transformer.fit_transform(term_freq)
         self.vectorized_corpus = normalize(self.vectorized_corpus)
 
-        
     def get_ranked_documents(self, query: str) -> pd.DataFrame:
         query = apply_pipeline(query, self.pipeline)
         query = query.split(" ")

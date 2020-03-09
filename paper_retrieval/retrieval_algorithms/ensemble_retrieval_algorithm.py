@@ -1,10 +1,7 @@
-import numpy as np
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
 
-from preprocessing import Corpus, apply_pipeline
+from preprocessing import Corpus
 from retrieval_algorithms import RetrievalAlgorithm
-from .identity import identity
 
 
 class EnsembleRetrievalAlgorithm(RetrievalAlgorithm):
@@ -21,7 +18,7 @@ class EnsembleRetrievalAlgorithm(RetrievalAlgorithm):
         ranking1 = self.algo1.get_ranking(query)
         ranking2 = self.algo2.get_ranking(query)
         df = pd.merge(ranking1, ranking2, how="outer", on="id")
-        df.fillna(0)
+        df = df.fillna(0)
         df["score"] = (self.weight * df["score_x"] +
                        (1 - self.weight) * df["score_y"])
         df.sort_values(by="score", ascending=False, inplace=True)

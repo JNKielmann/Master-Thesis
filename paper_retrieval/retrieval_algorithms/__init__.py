@@ -1,1 +1,6 @@
+from .bm25_retrieval_algorithm import BM25RetrievalAlgorithm
+from .ensemble_retrieval_algorithm import EnsembleRetrievalAlgorithm
+from .qlm_retrieval_algorithm import QueryLMRetrievalAlgorithm
 from .retrieval_algorithm import RetrievalAlgorithm
+from .tf_idf_retrieval_algorithm import TfIdfRetrievalAlgorithm
+from .word_vector_retrieval_algorithm import WordVectorRetrievalAlgorithm

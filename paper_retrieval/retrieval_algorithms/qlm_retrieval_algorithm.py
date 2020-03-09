@@ -52,9 +52,9 @@ class QueryLMRetrievalAlgorithm(RetrievalAlgorithm):
             smoothed_probs = (self.smoothing_weight * used_document_term_probs +
                               (1 - self.smoothing_weight) * corpus_probs)
         elif self.smoothing_method == "dp":
-            smoothed_probs = ((used_document_term_probs +
-                               self.smoothing_weight * corpus_probs) /
-                              (self.document_lengths + self.smoothing_weight))
+            a = (used_document_term_probs + self.smoothing_weight * corpus_probs)
+            b = (self.document_lengths + self.smoothing_weight).reshape(-1, 1)
+            smoothed_probs = a / b
         elif self.smoothing_method is None:
             smoothed_probs = used_document_term_probs
         else:
