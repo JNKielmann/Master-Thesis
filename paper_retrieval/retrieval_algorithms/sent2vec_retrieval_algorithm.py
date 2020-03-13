@@ -44,22 +44,29 @@ class Sent2VecRetrievalAlgorithm(RetrievalAlgorithm):
             print(np.stack(doc_vectors.values).squeeze().shape)
             self.doc_vectors = normalize(np.stack(doc_vectors.values).squeeze())
 
-    def get_ranking(self, query: str) -> pd.DataFrame:
+    def get_ranking(self, query: str, weights=None) -> pd.DataFrame:
         if self.ids is None:
             raise RuntimeError("Prepare of class Sent2VecRetrievalAlgorithm has to be "
                                "called before using get_ranking")
-        query = apply_pipeline(query, self.pipeline)
-        query = self.sent2vec_model.embed_sentence(query).squeeze()
+        if type(query) is str:
+            query = [query]
+
+        vectorized_query = np.array([self.sent2vec_model.embed_sentence(
+            apply_pipeline(q, self.pipeline)).squeeze() for q in query])
+        if weights is not None:
+            vectorized_query = vectorized_query * weights.reshape((-1, 1))
+        query_vector = vectorized_query.sum(axis=0)
+
         # relevant_docs = self.document_lookup.similar_by_vector(query, topn=100000)
         if self.use_annoy:
-            relevant_docs = self.annoy_index.get_nns_by_vector(query, 10000,
+            relevant_docs = self.annoy_index.get_nns_by_vector(query_vector, 10000,
                                                                include_distances=True)
             return pd.DataFrame({
                 "id": self.ids[relevant_docs[0]].values,
                 "score": relevant_docs[1]
             })
         else:
-            query = normalize(query.reshape(1, -1)).squeeze()
+            query = normalize(query_vector.reshape(1, -1)).squeeze()
             return pd.DataFrame({
                 "id": self.ids,
                 "score": self.doc_vectors.dot(query)

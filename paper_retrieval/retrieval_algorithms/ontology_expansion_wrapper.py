@@ -6,11 +6,10 @@ from retrieval_algorithms import RetrievalAlgorithm
 
 class OntologyExpansionWrapper(RetrievalAlgorithm):
 
-    def __init__(self, retrieval_algorithm, expansion_hierarchy,
-                 only_expand_once, separate_weighting, expansion_weight):
+    def __init__(self, retrieval_algorithm: RetrievalAlgorithm, expansion_hierarchy,
+                 only_expand_once, expansion_weight):
         self.expansion_weight = expansion_weight
         self.retrieval_algorithm = retrieval_algorithm
-        self.separate_weighting = separate_weighting
         self.only_expand_once = only_expand_once
         self.keyword_to_id = {}
         self.expansion_hierarchy = expansion_hierarchy
@@ -18,10 +17,10 @@ class OntologyExpansionWrapper(RetrievalAlgorithm):
 
     def prepare(self, corpus: Corpus):
         self.retrieval_algorithm.prepare(corpus)
-        for key, value in self.expansion_hierarchy["keyword_to_id"].items():
-            processed_key = value.lower()
-            if processed_key not in self.keyword_to_id:
-                self.keyword_to_id[processed_key] = value
+        for keyword, kw_id in self.expansion_hierarchy["keyword_to_id"].items():
+            processed_keyword = keyword.lower()
+            if processed_keyword not in self.keyword_to_id:
+                self.keyword_to_id[processed_keyword] = kw_id
 
     def get_ranking(self, query: str) -> pd.DataFrame:
         query = query.lower()
@@ -30,8 +29,8 @@ class OntologyExpansionWrapper(RetrievalAlgorithm):
 
     def _separate_weighting(self, query, expansion_terms):
         expanded_query = " ".join(expansion_terms)
-        normal_results = self.retrieval_algorithm.get_ranked_documents(query)
-        expanded_results = self.retrieval_algorithm.get_ranked_documents(expanded_query)
+        normal_results = self.retrieval_algorithm.get_ranking(query)
+        expanded_results = self.retrieval_algorithm.get_ranking(expansion_terms)
         joined_documents = pd.merge(normal_results, expanded_results, on="id",
                                     how="outer")
         joined_documents = joined_documents.fillna(0)

@@ -1,9 +1,10 @@
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
+import numpy as np
 
 from bm25_transformer import BM25Transformer
 from preprocessing import Corpus, apply_pipeline
-from retrieval_algorithms import RetrievalAlgorithm
+from .retrieval_algorithm import RetrievalAlgorithm
 from .identity import identity
 
 
@@ -46,7 +47,7 @@ class BM25RetrievalAlgorithm(RetrievalAlgorithm):
         processed_query = [apply_pipeline(q, self.pipeline).split(" ") for q in query]
         vectorized_query = self.count_vectorizer.transform(processed_query)
         if weights is not None:
-            vectorized_query *= weights
+            vectorized_query.data = vectorized_query.data * weights.repeat(np.diff(vectorized_query.indptr))
         vectorized_query = vectorized_query.sum(axis=0).getA1()
 
         df = pd.DataFrame(self.ids)

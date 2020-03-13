@@ -31,13 +31,20 @@ class WordVectorRetrievalAlgorithm(RetrievalAlgorithm):
         doc_vectors = corpus.data.progress_apply(self.sentence_embedder.encode_sentence)
         self.doc_vectors = normalize(np.stack(doc_vectors.values))
 
-    def get_ranking(self, query: str) -> pd.DataFrame:
+    def get_ranking(self, query: str, weights=None) -> pd.DataFrame:
         if self.ids is None:
             raise RuntimeError("Prepare of class WordVectorRetrievalAlgorithm has to be "
                                "called before using get_ranking")
-        query = apply_pipeline(query, self.pipeline)
-        query = query.split(" ")
-        query_vector = self.sentence_embedder.encode_sentence(query)
+        if type(query) is str:
+            query = [query]
+
+        vectorized_query = np.array([self.sentence_embedder.encode_sentence(
+            apply_pipeline(q, self.pipeline).split(" ")) for q in query])
+
+        if weights is not None:
+            vectorized_query = vectorized_query * weights.reshape((-1, 1))
+        query_vector = vectorized_query.sum(axis=0)
+
         if query_vector is None:
             return pd.DataFrame([], columns=["id", "score"])
         else:
@@ -156,11 +163,12 @@ class TfidfSentenceEmbedding:
         self.vectorizer.fit(corpus.data)
 
     def encode_sentence(self, sentence: List[str]):
-        words = [word for word in sentence if word in self.model.vocab]
+        words = sentence  # [word for word in sentence if word in self.model.vocab]
         if len(words) == 0:
             return None
-        word_ids = [self.vectorizer.vocabulary_[word] for word in words]
+        word_ids = [self.vectorizer.vocabulary_.get(word, 0) for word in words]
         idf = self.vectorizer.idf_[word_ids].reshape(-1, 1)
+        idf /= idf.sum()
         return np.sum(self.model[words] * idf, axis=0) / len(words)
 
 
