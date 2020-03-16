@@ -126,12 +126,14 @@ manual_expert_list = {
         1983767936, # Stefan Emeis
         2918680574, # thomas blumenstock
     ],
-    # "action recognition": [
-    #     332721774, # Rainer Stiefelhagen
-    #     2226325802, # Alina Roitberg
-    #
-    #
-    # ],
+    "action recognition": [
+        332721774, # Rainer Stiefelhagen
+        2226325802, # Alina Roitberg
+        39126808, # Lukas Rybok
+        291719226, # Ziad Al-Halah
+        2989702969, # vivek sharma
+        2782551808, # Christian R. G. Dreher
+    ],
     # "digital signatures": [
     #
     # ],
@@ -141,6 +143,7 @@ manual_expert_list = {
     "cellular automaton": [
         2464108834, # Simon Wacker
         183621591, # Thomas Worsch
+        2484531368, # augusto modanese
     ],
     "electronic voting": [
         135566254, # Jörn Müller-Quade
@@ -157,5 +160,16 @@ manual_expert_list = {
         2165996130, # Benjamin Noack
         2056797944, # Christoph Stiller
         2228035992, # Florian Pfaff
+        2124202115, # Sören Hohmann
+        2263767454, # stephan rhode
+        2088092445, # Jannik Steinbring
+    ],
+    "software architecture": [
+        2145590652, #Anne Koziolek
+        2065819799, # Ralf Reussner
+        2131192818, # Robert Heinrich
+        2945337135, # Jan Keim
+        2147052273, # axel busch
+        2046769057, # stephan seifermann
     ]
 }
