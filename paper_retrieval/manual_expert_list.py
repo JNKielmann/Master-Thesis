@@ -1,7 +1,7 @@
 manual_expert_list = {
     "internet of things": [
-        673846798,  # Michael Beigl
-        2130664820,  # Till Riedel
+        673846798, # Michael Beigl
+        2130664820, # Till Riedel
         2130344165, # Jörg Henkel
         2241467651, # Lars Bauer
         1974079823, # Farzad Samie
@@ -9,6 +9,7 @@ manual_expert_list = {
         2246826143, # Mehdi B. Tahoori
         102396157, # Martina Zitterbart
         2018480418, # Tobias Käfer
+        44972708, # Maria Maleshkova
 
         # 2536964599,  # Anja Exler
         # 2555467802,  # erik pescara
@@ -23,10 +24,11 @@ manual_expert_list = {
         2058489235,  # Hannes Hartenstein
         2021103267,  # Ali Sunyaev
         2587321452,  # stefan seebacher
-        # 2898611480, # matthias grundmann (at kit, not in gs)
+        2898611480, # matthias grundmann (at kit, not in gs)
+        2802026429, # marc leinweber
         2922954189,  # Niclas Kannengießer
-        2607646339,  # Sebastian Lins
         1245553041,  # Tobias Dehling
+        2890702394, # Oliver Stengele
     ],
     "natural language processing": [
         2061074560,  # alex waibel
@@ -35,7 +37,6 @@ manual_expert_list = {
         2101077920,  # markus muller
         2170753228,  # Thanh-Le Ha
         2759924440,  # Ngoc-Quan Pham
-        2790065202,  # Stefan Constantin
         2105886198,  # Rudi Studer
         268444295,  # alexander maedche
         2165062152,  # Matthias Sperber
@@ -45,6 +46,7 @@ manual_expert_list = {
         2578689274,  # Tobias Hey
         2074083528,  # Walter F. Tichy
         2800040021,  # Abel Elekes
+        # achim rettinger left kit
     ],
     "autonomous driving": [
         2056797944,  # christoph stiller
@@ -60,16 +62,19 @@ manual_expert_list = {
         2947663597,  # nathalie brenner
         2246613708,  # andreas lauber
         2626537028,  # simon rothfus
-        2962980503,  # Marius Zollner
+        2518124606,  # Marius Zollner
         2746570896,  # Maximilian Naumann
         2810059395,  # Annika Meyer
-
+        2810620501, # Piotr F. Orzechowski
+        # philipp bender left kit
     ],
     "humanoid robot": [
         1047662447,  # tamim asfour
         2614726016,  # albert albers
         2161631798,  # mirko wachter
-        2026820270,  # r dillmann
+        1305265972,  # r dillmann
+        2633623146,  # r dillmann second profile
+        2026820270, # r dillmann third profile
         332721774,  # rainer stiefelhagen
         1967175795,  # torsten kroger
         2570474579,  # Simon Ottenhaus
@@ -93,7 +98,7 @@ manual_expert_list = {
         2077764046,  # karluwe stucky
         2104163988,  # wilfried jakob
         2614726016,  # albert albers
-
+        # Stefan Wagner at stuttgart
     ],
     "remote sensing": [
         2023722769,  # johannes orphal
@@ -118,6 +123,8 @@ manual_expert_list = {
         2261027585,  # martin weinmann
         346619331,  # Boris Jutzi
         2141378911,  # Andreas Wieser
+        1983767936, # Stefan Emeis
+        2918680574, # thomas blumenstock
     ],
     # "action recognition": [
     #     332721774, # Rainer Stiefelhagen
