@@ -39,8 +39,8 @@ manual_expert_list = {
         2759924440,  # Ngoc-Quan Pham
         2105886198,  # Rudi Studer
         268444295,  # alexander maedche
-        2165062152,  # Matthias Sperber
-        2791786201,  # Michael Färber
+        # 2165062152,  # Matthias Sperber not at kit
+        2234226910,  # Michael Färber
         2164999476,  # Harald Sack
         2231152044,  # Sebastian Weigelt
         2578689274,  # Tobias Hey
@@ -138,24 +138,24 @@ manual_expert_list = {
     # "quantum cryptography": [
     #
     # ],
-    # "cellular automaton": [
-    #     2464108834, # Simon Wacker
-    #     183621591, # Thomas Worsch
-    # ],
-    # "electronic voting": [
-    #     135566254, # Jörn Müller-Quade
-    #     2226726414, # Jochen Rill
-    #     165695016, # melanie volkamer
-    #     2038785220, # Bernhard Beckert
-    #
-    # ],
+    "cellular automaton": [
+        2464108834, # Simon Wacker
+        183621591, # Thomas Worsch
+    ],
+    "electronic voting": [
+        135566254, # Jörn Müller-Quade
+        2226726414, # Jochen Rill
+        165695016, # melanie volkamer
+        2038785220, # Bernhard Beckert
+
+    ],
     # "spiking neural network": [
     #
     # ],
-    # "kalman filter": [
-    #     13246170, # Uwe D. Hanebeck
-    #     2165996130, # Benjamin Noack
-    #     2056797944, # Christoph Stiller
-    #     2228035992, # Florian Pfaff
-    # ]
+    "kalman filter": [
+        13246170, # Uwe D. Hanebeck
+        2165996130, # Benjamin Noack
+        2056797944, # Christoph Stiller
+        2228035992, # Florian Pfaff
+    ]
 }
