@@ -191,13 +191,49 @@ def export_paper_info_json(papers, path):
     papers[columns].set_index("id").to_json(path, orient="index")
 
 
-def export_author_info_json(mag_author_collection, gs_author_collection, path):
-    authors = list(mag_author_collection.find({
+def has_valid_affiliation(author):
+    kit = "karlsruhe institute of technology" in author["affiliation"]
+    fzi = "center for information technology" in author["affiliation"]
+    return kit or fzi
+
+
+def get_author_kit_score(paper_collection, author_collection):
+    authors = list(author_collection.find({
+        "last_publication_date": {"$gte": datetime(2019, 1, 1)}
+    }))
+    author_map = {author["id"]: {**author,
+                                 "kit_paper": 0,
+                                 "non_kit_paper": 0,
+                                 "unknown_paper": 0}
+                  for author in authors}
+    papers = list(paper_collection.find({
+        "publication_date": {"$gte": datetime(2019, 1, 1)}
+    }))
+    for paper in papers:
+        author_counts = {author_id: len(list(group)) for author_id, group in
+                         itertools.groupby(paper["authors"], lambda a: a["id"])}
+        for author in paper["authors"]:
+            if author["id"] in author_map:
+                author_info = author_map[author["id"]]
+                if has_valid_affiliation(author):
+                    author_info["kit_paper"] += 1 / author_counts[author["id"]]
+                elif author["affiliation"] != "":
+                    author_info["non_kit_paper"] += 1 / author_counts[author["id"]]
+                else:
+                    author_info["unknown_paper"] += 1 / author_counts[author["id"]]
+    return author_map
+
+
+def export_author_info_json(paper_collection, author_collection, gs_author_collection,
+                            path):
+    authors = list(author_collection.find({
         "last_publication_date": {"$gte": datetime(2019, 1, 1)}
     }, {
         "id": 1,
-        "name": 1
+        "name": 1,
+        "last_publication_date": 1
     }))
+    author_info = get_author_kit_score(paper_collection, author_collection)
     for author in authors:
         gs_author = gs_author_collection.find_one({"name_normalized": author["name"]})
         if gs_author is not None:
@@ -205,8 +241,13 @@ def export_author_info_json(mag_author_collection, gs_author_collection, path):
             author["gs_id"] = gs_author["id"]
     author_map = {author["id"]: {
         "name": author["name"],
+        "last_publication_date": int(
+            datetime.timestamp(author["last_publication_date"]) * 1000),
         "gs_keywords": author.get("gs_keywords", []),
-        "gs_id": author.get("gs_id", None)
+        "gs_id": author.get("gs_id", None),
+        "kit_paper": author_info[author["id"]]["kit_paper"],
+        "non_kit_paper": author_info[author["id"]]["non_kit_paper"],
+        "unknown_paper": author_info[author["id"]]["unknown_paper"],
     } for author in authors}
     with open(path, 'w') as file:
         json.dump(author_map, file)
@@ -229,39 +270,41 @@ def main():
                                password=config.mongo_password)
     db = mongo_client["expert_recommender"]
 
-    citation_snippets = get_citation_snippets(db)
+    # citation_snippets = get_citation_snippets(db)
+    # #
+    # expert_papers = get_expert_papers(db["kit_expert_papers"], db["mag_kit_authors"])
+    # expert_papers = pd.merge(expert_papers, citation_snippets, on="id", how="left")
+    #
+    # expert_papers = filter_bad_papers(expert_papers)
+    # expert_papers = expert_papers.fillna("")
+    #
+    # expert_papers["text"] = \
+    #     expert_papers["display_title"] + " " + expert_papers["abstract"]
+    # export_paper_abstracts_csv(expert_papers, "../data/kit_expert_2019_all_papers.csv")
+    #
+    # expert_papers["text"] = \
+    #     expert_papers["display_title"] + " " + expert_papers["abstract"] + " " + \
+    #     expert_papers["journal_conference_name"] + " " + expert_papers[
+    #         "citation_context_snippets"]
+    # export_paper_abstracts_csv(expert_papers,
+    #                            "../data/kit_expert_2019_all_papers_journal_citations.csv")
+    #
+    # export_paper_info_json(expert_papers, "../data/kit_expert_2019_all_paper_info.json")
 
-    expert_papers = get_expert_papers(db["kit_expert_papers"], db["mag_kit_authors"])
-    expert_papers = pd.merge(expert_papers, citation_snippets, on="id", how="left")
-
-    expert_papers = filter_bad_papers(expert_papers)
-    expert_papers = expert_papers.fillna("")
-
-    expert_papers["text"] = \
-        expert_papers["display_title"] + " " + expert_papers["abstract"]
-    export_paper_abstracts_csv(expert_papers, "../data/kit_expert_2019_all_papers.csv")
-
-    expert_papers["text"] = \
-        expert_papers["display_title"] + " " + expert_papers["abstract"] + " " + \
-        expert_papers["journal_conference_name"] + " " + expert_papers[
-            "citation_context_snippets"]
-    export_paper_abstracts_csv(expert_papers,
-                               "../data/kit_expert_2019_all_papers_journal_citations.csv")
-
-    export_paper_info_json(expert_papers, "../data/kit_expert_2019_all_paper_info.json")
-    export_author_info_json(db["mag_kit_authors"], db["gs_kit_authors"],
+    export_author_info_json(db["kit_expert_papers"], db["mag_kit_authors"],
+                            db["gs_kit_authors"],
                             "../data/kit_expert_2019_all_author_info.json")
 
-    keyword_hierarchy = get_keyword_hierarchy(db)
-    with open("../data/keyword_hierarchy.json", 'w') as file:
-        json.dump(keyword_hierarchy, file)
-
-    keywords_for_expert_papers = get_keywords_for(db["kit_expert_papers"],
-                                                  list(expert_papers["id"]))
-    export_keywords_json(keywords_for_expert_papers,
-                         "../data/kit_expert_2019_all_keywords.json")
-
-    logging.info("Finished preprocessing data")
+    # keyword_hierarchy = get_keyword_hierarchy(db)
+    # with open("../data/keyword_hierarchy.json", 'w') as file:
+    #     json.dump(keyword_hierarchy, file)
+    #
+    # keywords_for_expert_papers = get_keywords_for(db["kit_expert_papers"],
+    #                                               list(expert_papers["id"]))
+    # export_keywords_json(keywords_for_expert_papers,
+    #                      "../data/kit_expert_2019_all_keywords.json")
+    #
+    # logging.info("Finished preprocessing data")
 
 
 def get_citation_snippets(db):
