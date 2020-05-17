@@ -31,7 +31,7 @@ class Corpus:
             if self._load_from_file(cache_file_path, id_column, text_column):
                 logger.info(f"Loaded cached preprocessed corpus from {cache_file_path}")
                 return
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path).fillna("")
         self.ids = df[id_column]
         self.data = df[text_column]
         pool = None
