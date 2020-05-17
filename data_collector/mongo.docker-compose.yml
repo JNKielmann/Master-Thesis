@@ -22,3 +22,6 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: dev
       ME_CONFIG_MONGODB_ADMINPASSWORD: Password4DEV
 
+db.general_paper_collection.find({}, {normalized_title:1}).sort({_id:1}).forEach(function(doc){
+    db.general_paper_collection.remove({_id:{$gt:doc._id}, normalized_title:doc.normalized_title});
+})

@@ -16,8 +16,14 @@ tqdm = "*"
 seaborn = "*"
 matplotlib = "*"
 scipy = "*"
-tensorflow = "<2.0,>=1.15"
 scikit-learn = "*"
+cython = "*"
+fse = "*"
+annoy = "*"
+sent2vec = {editable = true,git = "https://github.com/epfml/sent2vec.git"}
+flask = "*"
+flask-cors = "*"
+wordcloud = "*"
 
 [requires]
 python_version = "3.7"
