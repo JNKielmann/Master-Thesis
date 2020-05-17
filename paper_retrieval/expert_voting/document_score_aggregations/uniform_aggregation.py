@@ -7,8 +7,8 @@ from expert_voting.scored_expert import ScoredExpert
 
 
 class UniformAggregation(DocumentScoreAggregation):
-    def __init__(self, doc_info):
-        super().__init__(doc_info)
+    def __init__(self, doc_info, num_docs=None):
+        super().__init__(doc_info, num_docs)
 
     def _calc_doc_score(self, author, num_authors, doc):
         return doc.score/num_authors

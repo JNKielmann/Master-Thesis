@@ -19,12 +19,12 @@ class PaperAgeModifier(DocumentScoreModifier):
         result = []
         for rank, doc in enumerate(input_list):
             publication_timestamp = self.doc_info[str(doc.id)]["publication_date"]
-            publication_timestamp /= (1000*60*60*24)
-            current_timestamp = time.time() / (60*60*24)
+            publication_timestamp /= (1000*60*60*24*365)
+            current_timestamp = time.time() / (60*60*24*365)
             paper_age = current_timestamp - publication_timestamp
             new_score = doc.score * ((1 - self.beta)
                                      * (1 / np.power(self.alpha, paper_age))
                                      + self.beta)
             result.append(doc.change_score(new_score))
-        return result
+        return sorted(result, key=lambda doc: doc.score, reverse=True)
 

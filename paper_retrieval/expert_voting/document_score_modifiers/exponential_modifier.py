@@ -11,6 +11,6 @@ class ExponentialModifier(DocumentScoreModifier):
     def modify(self, input_list: List[ScoredDocument]) -> List[ScoredDocument]:
         result = []
         for rank, doc in enumerate(input_list):
-            new_score = np.exp(doc.score)
+            new_score = np.exp(doc.score*2)
             result.append(doc.change_score(new_score))
         return result

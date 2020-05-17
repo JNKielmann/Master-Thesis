@@ -16,6 +16,6 @@ class CitationCountModifier(DocumentScoreModifier):
         result = []
         for rank, doc in enumerate(input_list):
             citation_count = self.doc_infos[str(doc.id)]["citation_count"]
-            new_score = doc.score * np.ln(np.e + citation_count / self.alpha)
+            new_score = doc.score * np.log(np.e + citation_count / self.alpha)
             result.append(doc.change_score(new_score))
         return result

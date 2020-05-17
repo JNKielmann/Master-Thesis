@@ -9,8 +9,8 @@ from expert_voting.scored_expert import ScoredExpert
 
 
 class AuthorOrderAggregation(DocumentScoreAggregation):
-    def __init__(self, doc_info, alpha):
-        super().__init__(doc_info)
+    def __init__(self, doc_info, alpha, num_docs=None):
+        super().__init__(doc_info, num_docs)
         self.alpha = alpha
 
     def _calc_doc_score(self, author, num_authors, doc):
