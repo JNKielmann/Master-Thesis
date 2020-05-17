@@ -1,0 +1,4 @@
+,general keywords test,general keywords test,general keywords test,general keywords test,general keywords test,general keywords test,general keywords test,general keywords test,general keywords test,general keywords test,general keywords test,general keywords test,specific keywords test,specific keywords test,specific keywords test,specific keywords test,specific keywords test,specific keywords test,specific keywords test,specific keywords test,specific keywords test,specific keywords test,specific keywords test,specific keywords test
+,p@5,p@5,p@10,p@10,p@20,p@20,R-prec,R-prec,mAP,mAP,bpref,bpref,p@5,p@5,p@10,p@10,p@20,p@20,R-prec,R-prec,mAP,mAP,bpref,bpref
+,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err
+Best ensemble model,0.407,0.084,0.39,0.073,0.366,0.07,0.26,0.045,0.23,0.048,0.218,0.046,0.737,0.014,0.687,0.013,0.587,0.013,0.575,0.011,0.587,0.012,0.568,0.013

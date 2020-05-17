@@ -1,0 +1,8 @@
+,general keywords validation,general keywords validation,general keywords validation,general keywords validation,general keywords validation,general keywords validation,general keywords validation,general keywords validation,general keywords validation,general keywords validation,general keywords validation,general keywords validation,specific keywords validation,specific keywords validation,specific keywords validation,specific keywords validation,specific keywords validation,specific keywords validation,specific keywords validation,specific keywords validation,specific keywords validation,specific keywords validation,specific keywords validation,specific keywords validation
+,p@5,p@5,p@10,p@10,p@20,p@20,R-prec,R-prec,mAP,mAP,bpref,bpref,p@5,p@5,p@10,p@10,p@20,p@20,R-prec,R-prec,mAP,mAP,bpref,bpref
+,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err,avg,err
+ensemble weight=0.001,0.478,0.043,0.447,0.039,0.402,0.037,0.264,0.022,0.234,0.022,0.218,0.022,0.445,0.008,0.386,0.007,0.315,0.006,0.269,0.005,0.247,0.005,0.231,0.005
+ensemble weight=0.01,0.402,0.04,0.378,0.036,0.356,0.035,0.237,0.02,0.199,0.019,0.19,0.019,0.654,0.008,0.589,0.007,0.491,0.006,0.463,0.005,0.464,0.006,0.439,0.006
+ensemble weight=0.1,0.347,0.038,0.342,0.035,0.312,0.033,0.199,0.018,0.153,0.016,0.152,0.016,0.693,0.007,0.646,0.007,0.553,0.006,0.549,0.006,0.557,0.006,0.54,0.007
+ensemble weight=0.5,0.342,0.037,0.335,0.035,0.307,0.033,0.192,0.017,0.144,0.016,0.145,0.015,0.686,0.007,0.639,0.007,0.547,0.006,0.545,0.006,0.551,0.006,0.535,0.007
+ensemble weight=0.9,0.345,0.038,0.332,0.034,0.305,0.032,0.19,0.017,0.144,0.016,0.144,0.015,0.684,0.007,0.638,0.007,0.546,0.006,0.544,0.006,0.549,0.006,0.534,0.007
