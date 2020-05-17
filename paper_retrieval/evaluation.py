@@ -6,12 +6,22 @@ import numpy as np
 import pandas as pd
 from tqdm.notebook import tqdm
 
+from expert_voting.expert_voting import ExpertVoting
+from expert_voting.scored_document import ScoredDocument
+
 
 def average_precision(ranked_ids, relevant_ids):
     ranks = pd.Series(np.arange(1, len(ranked_ids) + 1))
     relevant_ranks = ranks[list(ranked_ids.isin(relevant_ids))]
     precisions = np.arange(1, len(relevant_ranks) + 1) / relevant_ranks.values
     return np.sum(precisions) / len(relevant_ids)
+
+
+def recall_at(n):
+    def calc_recall_at_n(ranked_ids, relevant_ids):
+        return np.sum(ranked_ids[:n].isin(relevant_ids)) / len(relevant_ids)
+
+    return calc_recall_at_n
 
 
 def precision_at(n):
@@ -34,12 +44,17 @@ def bpref(ranked_ids, relevant_ids):
     return np.sum(sum_terms) / num_relevant
 
 
-def calculate_metrics(model, test_data, metrics, progress_callback=None):
+ignored_ids = []
+
+
+def calculate_metrics(model, test_data, metrics, progress_callback=None,
+                      id_row="paper_ids"):
     results = []
     for test_row in test_data:
         query = test_row["keyword"]
-        relevant_ids = test_row["paper_ids"]
-        ranked_ids = model.get_ranking(query)["id"]
+        relevant_ids = [id for id in test_row[id_row] if id not in ignored_ids]
+        ranked_ids = pd.Series([id for id in model.get_ranking(query)["id"]
+                                if id not in ignored_ids])
         result_row = [query]
         for metric_name, metric_func in metrics:
             result_row.append(metric_func(ranked_ids, relevant_ids))
@@ -57,7 +72,7 @@ def confidence_interval_95(series):
 def calculate_average_metrics(model, test_data, metrics, progress_callback=None):
     metrics = calculate_metrics(model, test_data, metrics, progress_callback)
     average_metrics = metrics.drop("query", axis=1).agg(
-        ["mean", "std", confidence_interval_95])
+        ["mean", "std", "var", confidence_interval_95])
     return average_metrics.round(3).to_dict()
 
 
@@ -87,17 +102,18 @@ def evaluate_model(model, test_sets, metrics=None):
                                                         progress.update)
             for metric_name, metric_value in test_set_result.items():
                 results[(test_set_name, metric_name, "avg")] = metric_value['mean']
-                results[(test_set_name, metric_name, "err")] = metric_value[
-                    'confidence_interval_95']
+#                 results[(test_set_name, metric_name, "var")] = metric_value['var']
+                results[(test_set_name, metric_name, "err")] = metric_value['confidence_interval_95']
     return results
 
 
-def train_evaluate_model(model_info, test_sets):
+def train_evaluate_model(model_info, test_sets, train=True, metrics=None):
     model_name, model, corpus = model_info
-    logging.info("Start training model " + model_name)
-    model.prepare(corpus)
-    logging.info("Start evaluating model " + model_name)
-    result = evaluate_model(model, test_sets)
+    if train:
+        logging.info("Start training model " + model_name)
+        model.prepare(corpus)
+        logging.info("Start evaluating model " + model_name)
+    result = evaluate_model(model, test_sets,metrics)
     logging.info(f"Finished processing model {model_name}")
     return pd.DataFrame.from_dict({model_name: result}, orient="index")
 
@@ -109,6 +125,16 @@ def train_evaluate_models(model_infos, test_sets, n_jobs=4):
     else:
         with Pool(n_jobs) as pool:
             results = pool.map(train_eval, model_infos)
+    return pd.concat(results)
+
+
+def evaluate_models(model_infos, test_sets, n_jobs=4, metrics=None):
+    evaluate = partial(train_evaluate_model, train=False, test_sets=test_sets, metrics=metrics)
+    if n_jobs == 1:
+        results = map(evaluate, model_infos)
+    else:
+        with Pool(n_jobs) as pool:
+            results = pool.map(evaluate, model_infos)
     return pd.concat(results)
 
 
@@ -125,7 +151,18 @@ def to_latex_table(eval_table):
     general_table = r"\textbf{general queries}\\" + "\n"
     specific_table = r"\textbf{specific queries}\\" + "\n"
     for row_name, row_data in eval_table.iterrows():
-        general_table += process_row(row_data["general keywords validation"])
-        specific_table += process_row(row_data["specific keywords validation"])
+        general_table += process_row(row_data[row_data.index.levels[0][0]])
+        specific_table += process_row(row_data[row_data.index.levels[0][1]])
 
     return general_table + "\\addlinespace\n" + specific_table
+
+
+def author_ranking_to_latex(eval_table):
+    def process_row(r, r_name):
+        avg = r.xs("avg", level=2).values
+        return r_name + (" & {:.3f}" * len(avg)).format(*avg) + "\\\\\n"
+
+    latex_string = ""
+    for row_name, row_data in eval_table.iterrows():
+        latex_string += process_row(row_data, row_name)
+    return latex_string

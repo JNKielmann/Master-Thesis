@@ -71,3 +71,16 @@ class Sent2VecRetrievalAlgorithm(RetrievalAlgorithm):
                 "id": self.ids,
                 "score": self.doc_vectors.dot(query)
             }).sort_values(by="score", ascending=False)
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state["sent2vec_model"]
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.sent2vec_model = Sent2vecModel()
+        self.sent2vec_model.load_model(self.model_path)
+
+
+

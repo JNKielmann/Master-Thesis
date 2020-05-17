@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 
 from preprocessing import Corpus, apply_pipeline
-from retrieval_algorithms import RetrievalAlgorithm
+from .retrieval_algorithm import RetrievalAlgorithm
 from .identity import identity
 
 

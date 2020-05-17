@@ -28,8 +28,9 @@ class OntologyExpansionWrapper(RetrievalAlgorithm):
         return self._separate_weighting(query, expansion_terms)
 
     def _separate_weighting(self, query, expansion_terms):
-        expanded_query = " ".join(expansion_terms)
         normal_results = self.retrieval_algorithm.get_ranking(query)
+        if len(expansion_terms) == 0:
+            return normal_results
         expanded_results = self.retrieval_algorithm.get_ranking(expansion_terms)
         joined_documents = pd.merge(normal_results, expanded_results, on="id",
                                     how="outer")
