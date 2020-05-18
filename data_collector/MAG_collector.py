@@ -25,6 +25,15 @@ class ParsingError(Exception):
 
 
 def mag_request_page(offset, page_size, expr, attributes, num_tries=6):
+    """
+    Makes MAG Rest request to get page of results
+    :param offset: Number of entries to skip
+    :param page_size: Number of entries in this page
+    :param expr: Query describing what information to get from the MAG
+    :param attributes: List of attributes to return for the found MAG nodes
+    :param num_tries: Number of retries before failing
+    :return: MAG response
+    """
     for i in range(num_tries):
         response = None
         try:
@@ -53,6 +62,13 @@ def mag_request_page(offset, page_size, expr, attributes, num_tries=6):
 
 
 def mag_request_all(page_size, expr, attributes) -> Iterator[Paper]:
+    """
+    Request all items from the MAG for the query
+    :param page_size: Number of items to fetch in each page
+    :param expr: Query describing what information to get from the MAG
+    :param attributes: List of attributes to return for the found MAG nodes
+    :return: List of all items found
+    """
     offset = 0
     while True:
         json_response = mag_request_page(offset, page_size, expr, attributes)
@@ -63,8 +79,13 @@ def mag_request_all(page_size, expr, attributes) -> Iterator[Paper]:
 
 
 def request_all_papers(page_size, expr, attributes) -> Iterator[Paper]:
-    # attributes = "Id,Ti,D,CC,AA.AuN,AA.AuId,AA.AfN," \
-    #              "AA.S,F.FN,F.FId,J.JN,J.JId,C.CN,C.CId,E"
+    """
+    Request all items from the MAG for the query
+    :param page_size: Number of items to fetch in each page
+    :param expr: Query describing what information to get from the MAG
+    :param attributes: List of attributes to return for the found MAG nodes
+    :return: List of all papers found
+    """
     for paper_entity in mag_request_all(page_size, expr, attributes):
         try:
             yield json_to_paper(paper_entity)
@@ -74,6 +95,12 @@ def request_all_papers(page_size, expr, attributes) -> Iterator[Paper]:
 
 
 def abstract_from_inverted_index(word_count: int, inverted_index: Dict[str, List[int]]):
+    """
+    Create abstract string from MAG inverted intex
+    :param word_count: Number of words in abstract
+    :param inverted_index: The inverted index
+    :return: Abstract as a string
+    """
     word_list = [""] * word_count
     for word, occurrences in inverted_index.items():
         for occurrence in occurrences:
@@ -82,6 +109,11 @@ def abstract_from_inverted_index(word_count: int, inverted_index: Dict[str, List
 
 
 def json_to_paper(entity):
+    """
+    Convert MAG json response to paper object
+    :param entity: MAG json response
+    :return: Paper object
+    """
     try:
         extended_data = json.loads(entity["E"]) if "E" in entity else {}
         abstract = None
@@ -125,6 +157,13 @@ def json_to_paper(entity):
 
 
 def request_keywords(level, offset, page_size):
+    """
+    Request field of study keywords from MAG for specific level
+    :param level: Keywords level
+    :param offset: Number of entries to skip
+    :param page_size: Number of entries in this page
+    :return: List of keywords
+    """
     for i in range(6):
         response = requests.get(
             MAG_API_URL,
@@ -152,6 +191,11 @@ def request_keywords(level, offset, page_size):
 
 
 def request_all_keywords(page_size):
+    """
+    Request all field of study keywords from MAG
+    :param page_size: Number of results per page
+    :return: All keywords
+    """
     for level in range(0, 6):
         offset = 0
         logging.info(f"Start requesting keywords for level {level}")
@@ -180,6 +224,10 @@ def request_all_keywords(page_size):
 
 
 def save_kit_authors(kit_authors_collection):
+    """
+    Use heuristic to find KIT authors and save them to the MongoDB
+    :param kit_authors_collection: MongoDB author collection
+    """
     expr = f"Composite(AA.AfN='karlsruhe institute of technology')"
     attributes = "Id,AA.AuId,AA.AuN,AA.AfN,AA.DAfN,D"
     kit_papers = request_all_papers(1000, expr, attributes)
@@ -213,6 +261,13 @@ def save_kit_authors(kit_authors_collection):
 
 def save_papers_of_kit_authors(kit_authors_collection, kit_paper_collection,
                                since_year=2019):
+    """
+    Save all papers written by authors at the KIT
+    :param kit_authors_collection: MongoDB author collection
+    :param kit_paper_collection: MongoDB paper collection
+    :param since_year: The year in which a researcher as to have published a paper in
+                       order to be considered an expert
+    """
     kit_paper_collection.create_index("id", unique=True)
     relevant_authors = list(kit_authors_collection.find({
         "last_publication_date": {"$gte": datetime(since_year, 1, 1)}
@@ -263,19 +318,19 @@ def main():
     db = mongo_client["expert_recommender"]
 
     kit_authors_collection = db["mag_kit_authors"]
-    # save_kit_authors(kit_authors_collection)
+    save_kit_authors(kit_authors_collection)
 
-    # save_papers_of_kit_authors(kit_authors_collection, db["kit_expert_papers"])
+    save_papers_of_kit_authors(kit_authors_collection, db["kit_expert_papers"])
     remove_duplicate_papers(db["kit_expert_papers"])
 
-    # general_paper_collection = db["general_paper_collection"]
-    # general_papers = request_all_papers(page_size=500, expr="Y=2019")
-    # for paper_json in tqdm((paper.to_json() for paper in general_papers)):
-    #     general_paper_collection.insert_one(paper_json)
+    general_paper_collection = db["general_paper_collection"]
+    general_papers = request_all_papers(page_size=500, expr="Y=2019")
+    for paper_json in tqdm((paper.to_json() for paper in general_papers)):
+        general_paper_collection.insert_one(paper_json)
 
-    # keyword_collection = db["keywords_hierarchy"]
-    # for keyword in tqdm(request_all_keywords(1000), total=665677):
-    #     keyword_collection.insert_one(keyword)
+    keyword_collection = db["keywords_hierarchy"]
+    for keyword in tqdm(request_all_keywords(1000), total=665677):
+        keyword_collection.insert_one(keyword)
 
 
 if __name__ == '__main__':

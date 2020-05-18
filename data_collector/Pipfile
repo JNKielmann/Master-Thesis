@@ -16,6 +16,8 @@ seaborn = "*"
 langid = "*"
 cython = "*"
 whatthelang = "*"
+beautifulsoup4 = "*"
+editdistance = "*"
 
 [requires]
 python_version = "3.7"
