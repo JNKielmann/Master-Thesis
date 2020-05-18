@@ -17,8 +17,8 @@ The following steps are required for Setup:
 1. **Download required model files:**  
 Download [ensemble_model.model](https://drive.google.com/file/d/1BhhIocduWQI-RKqhmqRhDo7bJUK7tVoS/view) to data/models  
 Download [expert_voting.model](https://drive.google.com/file/d/1pM6kUf7xxTkSJ7MsDqkVb07hUYrNsZB9/view) to data/models  
-Download [bm25_oqe.model]() to data/models/tfidf  
-Download [sent2vec_oqe.model]() to data/models/sent2vec  
+Download [bm25_oqe.model](https://drive.google.com/file/d/1-ndi2qhckokRTy8hfUQwgFiOLhl3dPSb/view) to data/models/tfidf  
+Download [sent2vec_oqe.model](https://drive.google.com/file/d/1tN41yzOTECWKP9LjjHP-C9K4qqScxKhm/view?usp=sharing) to data/models/sent2vec  
 Download [wiki_bigrams.bin](https://drive.google.com/file/d/0B6VhzidiLvjSaER5YkJUdWdPWU0/view) to data/models/sent2vec (warning, this file has a size of 17gb the smaller unigram sent2vec model can also be used: https://github.com/epfml/sent2vec). 
 
 2. **Change directory to paper_retrieval/server**
