@@ -1,7 +1,8 @@
+"""
+Abstract base class all retrieval algorithms inherit from
+"""
 import abc
-
 import pandas as pd
-
 from preprocessing import Corpus
 
 

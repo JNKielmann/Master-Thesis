@@ -1,3 +1,6 @@
+"""
+Implement document retrieval using word vectors like fasttext
+"""
 import logging
 from typing import List
 

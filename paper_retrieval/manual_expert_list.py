@@ -1,3 +1,7 @@
+"""
+Expert list created manually
+List contains Microsoft Academic Graph Ids
+"""
 manual_expert_list = {
     "internet of things": [
         673846798, 

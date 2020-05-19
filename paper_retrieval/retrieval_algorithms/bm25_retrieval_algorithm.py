@@ -1,3 +1,6 @@
+"""
+Implement BM25 algorithm for retrieving documents
+"""
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np

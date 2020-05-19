@@ -1,3 +1,7 @@
+"""
+Expert list create from online survey data.
+List contains Microsoft Academic Graph Ids
+"""
 survey_expert_list = {
     "humanoid robot": [
         1047662447,  

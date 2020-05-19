@@ -1,3 +1,6 @@
+"""
+Implement Sen2Vec algorithm for retrieving documents
+"""
 import logging
 
 import numpy as np

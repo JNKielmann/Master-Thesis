@@ -1,3 +1,6 @@
+"""
+Implement ensemble wrapper that combines to other retrieval algorithms
+"""
 import pickle
 
 import pandas as pd

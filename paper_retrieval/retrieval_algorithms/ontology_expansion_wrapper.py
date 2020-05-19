@@ -1,3 +1,6 @@
+"""
+Implement wrapper that uses a fixed ontology to expand the initial query with additional terms
+"""
 import pandas as pd
 
 from preprocessing import Corpus

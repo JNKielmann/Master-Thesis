@@ -1,3 +1,6 @@
+"""
+Implement wrapper that uses pseudo relevance feedback to expand the initial query with additional terms
+"""
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer

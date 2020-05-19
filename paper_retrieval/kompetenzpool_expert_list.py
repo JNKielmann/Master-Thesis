@@ -1,3 +1,7 @@
+"""
+Expert list created from Kompetenzpool data.
+List contains Microsoft Academic Graph Ids
+"""
 kompetenzpool_expert_list = {
     "Internet of Things": [
         2241467651,  
